@@ -16,7 +16,6 @@ public class RouterRest {
         return route(POST("/api/v1/users"), handler::listenSaveUser)
                 .andRoute(GET("/api/v1/users"), handler::listenGetAllUsers)
                 .andRoute(GET("/api/v1/users/{id}"), handler::listenGetUserById)
-                .andRoute(GET("/api/v1/users/{email}"), handler::listenGetUserById)
                 .andRoute(DELETE("/api/v1/users/{id}"), handler::listenDeleteUser);
     }
 }

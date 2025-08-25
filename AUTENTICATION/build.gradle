@@ -17,6 +17,8 @@ plugins {
 	id 'jacoco'
 }
 
+
+
 sonar {
     def modules = subprojects.projectDir.collect { "${it.toString().replace(project.projectDir.toString() + "/", "")}" }
     properties {

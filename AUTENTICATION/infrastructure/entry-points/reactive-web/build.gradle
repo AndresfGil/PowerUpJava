@@ -5,4 +5,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'   // trae slf4j + logback
+    // Opcional, trazas automáticas con Micrometer Tracing (si quieres traceId/spanId en MDC)
+    // implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    // implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'       // Reactive repos/tx
+    implementation 'io.asyncer:r2dbc-mysql:1.1.0'                                  // Driver R2DBC MySQL
+
 }
