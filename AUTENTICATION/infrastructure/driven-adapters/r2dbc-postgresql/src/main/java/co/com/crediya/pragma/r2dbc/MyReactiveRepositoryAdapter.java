@@ -1,6 +1,7 @@
 package co.com.crediya.pragma.r2dbc;
 
 import co.com.crediya.pragma.model.user.User;
+import co.com.crediya.pragma.model.user.exception.EmailAlreadyExistsException;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
 import co.com.crediya.pragma.r2dbc.entities.UserEntity;
 import co.com.crediya.pragma.r2dbc.helper.ReactiveAdapterOperations;
@@ -34,7 +35,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                 .flatMap(existing -> {
                     log.info("R2DBC saveUser duplicate email={} detected in {} ms",
                             normalized, System.currentTimeMillis() - t0);
-                    return Mono.<User>error(new IllegalStateException("email_duplicado"));
+                    return Mono.error(new EmailAlreadyExistsException(normalized));
                 })
                 .switchIfEmpty(
                         super.save(user)
@@ -45,6 +46,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                 )
                 .cast(User.class);
     }
+
 
     @Override
     public Flux<User> getAllUsers() {

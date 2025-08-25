@@ -23,6 +23,14 @@ spring:
     placeholders:
       db: "${adapters.r2dbc.database}"
 
+    springdoc:
+      api-docs:
+        enabled: true
+      swagger-ui:
+        enabled: true
+        path: /swagger-ui.html
+
+
 adapters:
   r2dbc:
     host: "localhost"
