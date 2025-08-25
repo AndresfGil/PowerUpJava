@@ -13,9 +13,10 @@ public class RouterRest {
 
     @Bean
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
-        return route(POST("/api/users"), handler::listenSaveUser)       // Crear usuario
-                .andRoute(GET("/api/users"), handler::listenGetAllUsers) // Listar usuarios
-                .andRoute(GET("/api/users/{id}"), handler::listenGetUserById) // Buscar por id
-                .andRoute(DELETE("/api/users/{id}"), handler::listenDeleteUser); // Eliminar usuario
+        return route(POST("/api/v1/users"), handler::listenSaveUser)
+                .andRoute(GET("/api/v1/users"), handler::listenGetAllUsers)
+                .andRoute(GET("/api/v1/users/{id}"), handler::listenGetUserById)
+                .andRoute(GET("/api/v1/users/{email}"), handler::listenGetUserById)
+                .andRoute(DELETE("/api/v1/users/{id}"), handler::listenDeleteUser);
     }
 }

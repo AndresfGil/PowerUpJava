@@ -14,8 +14,8 @@ import org.springframework.data.relational.core.mapping.Table;
 public class RoleEntity {
 
     @Id
-    @Column("id_rol")
-    private Long idRol;
+    @Column("rol_id")
+    private Long rolId;
 
     private String name;
 

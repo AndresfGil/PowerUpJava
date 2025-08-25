@@ -3,23 +3,32 @@ CREATE DATABASE IF NOT EXISTS `${db}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unic
 
 -- Create roles table
 CREATE TABLE IF NOT EXISTS `${db}`.`roles` (
-                                               `rol_id` BIGINT NOT NULL AUTO_INCREMENT,
-                                               `nombre` VARCHAR(100) NOT NULL,
-    `descripcion` VARCHAR(255) NULL,
+    `rol_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `description` VARCHAR(255) NULL,
     PRIMARY KEY (`rol_id`)
     ) ENGINE=InnoDB;
 
+-- Insert default roles (only if table is empty)
+INSERT INTO `${db}`.`roles` (`name`, `description`)
+SELECT * FROM (SELECT 'ADMIN', 'Administrador del sistema') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM `${db}`.`roles` WHERE `name` = 'ADMIN');
+
+INSERT INTO `${db}`.`roles` (`name`, `description`)
+SELECT * FROM (SELECT 'USER', 'Usuario estándar') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM `${db}`.`roles` WHERE `name` = 'USER');
+
 -- Create usuarios table
 CREATE TABLE IF NOT EXISTS `${db}`.`users` (
-                                                  `user_id` BIGINT NOT NULL AUTO_INCREMENT,
-                                                  `nombre` VARCHAR(100) NOT NULL,
-    `apellido` VARCHAR(100) NOT NULL,
-    `fecha_nacimiento` VARCHAR(20) NULL,
-    `direccion` VARCHAR(200) NULL,
-    `telefono` VARCHAR(50) NULL,
-    `correo_electronico` VARCHAR(150) NULL,
-    `salario_base` DECIMAL(15,2) NULL,
-    `documento_identidad` VARCHAR(50) NULL,
+    `user_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `lastname` VARCHAR(100) NOT NULL,
+    `birth_date` VARCHAR(20) NULL,
+    `address` VARCHAR(200) NULL,
+    `phone` VARCHAR(50) NULL,
+    `email` VARCHAR(150) NULL,
+    `base_salary` DECIMAL(15,2) NULL,
+    `document_id` VARCHAR(50) NULL,
     `rol_id` BIGINT NULL,
     PRIMARY KEY (`user_id`),
     CONSTRAINT `fk_users_roles` FOREIGN KEY (`rol_id`) REFERENCES `${db}`.`roles`(`rol_id`)

@@ -6,18 +6,16 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+
 
 @RequiredArgsConstructor
 public class UserUseCase {
 
     private final UserRepository userRepository;
 
-    public Mono<Void> saveUser(User user){
-        userRepository.saveUser(user);
-        return null;
+    public Mono<User> saveUser(User user){
+        return userRepository.saveUser(user);
     }
-
     public Flux<User> getAllUsers(){
         return userRepository.getAllUsers();
     }
@@ -26,13 +24,7 @@ public class UserUseCase {
         return userRepository.getUserByIdNumber(idNumber);
     }
 
-    public Mono<User> editUser(User user){
-        return userRepository.editUser(user);
-    }
-
     public Mono<Void> deleteUser(Long idNumber){
-        userRepository.deleteUser(idNumber);
-        return null;
+        return userRepository.deleteUser(idNumber);
     }
-
 }
