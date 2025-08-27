@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/AUTENTICATION" />
+        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/AUTENTICATION" />
+            <option value="$PROJECT_DIR$/AUTENTICATION/applications/app-service" />
+            <option value="$PROJECT_DIR$/AUTENTICATION/domain/model" />
+            <option value="$PROJECT_DIR$/AUTENTICATION/domain/usecase" />
+            <option value="$PROJECT_DIR$/AUTENTICATION/infrastructure/driven-adapters/r2dbc-postgresql" />
+            <option value="$PROJECT_DIR$/AUTENTICATION/infrastructure/entry-points/reactive-web" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

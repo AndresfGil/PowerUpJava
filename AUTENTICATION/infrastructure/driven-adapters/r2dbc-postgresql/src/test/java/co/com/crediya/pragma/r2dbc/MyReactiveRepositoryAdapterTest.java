@@ -1,78 +1,183 @@
 package co.com.crediya.pragma.r2dbc;
 
+import co.com.crediya.pragma.model.user.User;
+import co.com.crediya.pragma.r2dbc.entities.UserEntity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class MyReactiveRepositoryAdapterTest {
-    // TODO: change four you own tests
+
+    @Mock
+    private MyReactiveRepository repository;
+
+    @Mock
+    private ObjectMapper mapper;
+
+    @Mock
+    private TransactionalOperator transactionalOperator;
 
     @InjectMocks
-    MyReactiveRepositoryAdapter repositoryAdapter;
+    private MyReactiveRepositoryAdapter adapter;
 
-    @Mock
-    MyReactiveRepository repository;
+    private User testUser;
+    private UserEntity testUserEntity;
 
-    @Mock
-    ObjectMapper mapper;
+    @BeforeEach
+    void setUp() {
+        testUser = User.builder()
+                .userId(1L)
+                .name("Juan")
+                .lastname("Pérez")
+                .email("juan.perez@test.com")
+                .documentId("12345678")
+                .address("Calle 123")
+                .birthDate("1990-01-01")
+                .phone("3001234567")
+                .rolId(1L)
+                .baseSalary(BigDecimal.valueOf(2000000))
+                .build();
+
+        testUserEntity = UserEntity.builder()
+                .userId(1L)
+                .name("Juan")
+                .lastname("Pérez")
+                .email("juan.perez@test.com")
+                .documentId("12345678")
+                .address("Calle 123")
+                .birthDate("1990-01-01")
+                .phone("3001234567")
+                .rolId(1L)
+                .baseSalary(2000000.0)
+                .build();
+    }
 
     @Test
-    void mustFindValueById() {
+    @DisplayName("Debe guardar un usuario exitosamente")
+    void shouldSaveUserSuccessfully() {
+        when(mapper.map(any(User.class), eq(UserEntity.class))).thenReturn(testUserEntity);
+        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(testUserEntity));
+        when(transactionalOperator.transactional(any(Mono.class))).thenReturn(Mono.just(testUser));
 
-        when(repository.findById("1")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
-
-        Mono<Object> result = repositoryAdapter.findById("1");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.saveUser(testUser))
+                .expectNext(testUser)
                 .verifyComplete();
     }
 
     @Test
-    void mustFindAllValues() {
-        when(repository.findAll()).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Debe obtener todos los usuarios exitosamente")
+    void shouldGetAllUsersSuccessfully() {
+        List<UserEntity> userEntities = List.of(testUserEntity);
+        when(repository.findAll()).thenReturn(Flux.fromIterable(userEntities));
+        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
 
-        Flux<Object> result = repositoryAdapter.findAll();
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.getAllUsers())
+                .expectNext(testUser)
                 .verifyComplete();
     }
 
     @Test
-    void mustFindByExample() {
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Debe obtener un usuario por ID exitosamente")
+    void shouldGetUserByIdSuccessfully() {
+        Long userId = 1L;
+        when(repository.findById(userId)).thenReturn(Mono.just(testUserEntity));
+        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
 
-        Flux<Object> result = repositoryAdapter.findByExample("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.getUserByIdNumber(userId))
+                .expectNext(testUser)
                 .verifyComplete();
     }
 
     @Test
-    void mustSaveValue() {
-        when(repository.save("test")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+    @DisplayName("Debe retornar Mono vacío cuando el usuario no existe por ID")
+    void shouldReturnEmptyMonoWhenUserDoesNotExistById() {
+        Long userId = 999L;
+        when(repository.findById(userId)).thenReturn(Mono.empty());
 
-        Mono<Object> result = repositoryAdapter.save("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+        StepVerifier.create(adapter.getUserByIdNumber(userId))
                 .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe obtener un usuario por email exitosamente")
+    void shouldGetUserByEmailSuccessfully() {
+        String email = "juan.perez@test.com";
+        when(repository.findByEmail(email)).thenReturn(Mono.just(testUserEntity));
+        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
+
+        StepVerifier.create(adapter.getUserByEmail(email))
+                .expectNext(testUser)
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe normalizar email a minúsculas al buscar por email")
+    void shouldNormalizeEmailToLowerCaseWhenSearchingByEmail() {
+        String email = "JUAN.PEREZ@TEST.COM";
+        String normalizedEmail = "juan.perez@test.com";
+        when(repository.findByEmail(normalizedEmail)).thenReturn(Mono.just(testUserEntity));
+        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
+
+        StepVerifier.create(adapter.getUserByEmail(email))
+                .expectNext(testUser)
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe retornar Mono vacío cuando el usuario no existe por email")
+    void shouldReturnEmptyMonoWhenUserDoesNotExistByEmail() {
+        String email = "nonexistent@test.com";
+        when(repository.findByEmail(email)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.getUserByEmail(email))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe manejar email null correctamente")
+    void shouldHandleNullEmailCorrectly() {
+        when(repository.findByEmail(null)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.getUserByEmail(null))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe eliminar un usuario exitosamente")
+    void shouldDeleteUserSuccessfully() {
+        Long userId = 1L;
+        when(repository.deleteById(userId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.deleteUser(userId))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe manejar errores del repositorio correctamente")
+    void shouldHandleRepositoryErrorsCorrectly() {
+        RuntimeException repositoryError = new RuntimeException("Database error");
+        when(repository.findAll()).thenReturn(Flux.error(repositoryError));
+
+        StepVerifier.create(adapter.getAllUsers())
+                .expectError(RuntimeException.class)
+                .verify();
     }
 }

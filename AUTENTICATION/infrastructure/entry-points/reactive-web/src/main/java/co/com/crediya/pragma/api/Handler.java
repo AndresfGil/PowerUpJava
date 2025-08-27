@@ -41,7 +41,7 @@ public class Handler {
                         saved.getAddress()
                 ))
                 .flatMap(responseDto -> ServerResponse
-                        .created(URI.create("/api/v1/users/id/" + responseDto.getEmail())) // o por id si quieres
+                        .created(URI.create("/api/v1/users/id/" + responseDto.getEmail()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(responseDto));
 
