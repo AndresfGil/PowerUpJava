@@ -1,12 +1,10 @@
 package co.com.crediya.pragma.api;
 
 import co.com.crediya.pragma.api.dto.SaveUserDTO;
+import co.com.crediya.pragma.api.dto.UserResponseDTO;
 import co.com.crediya.pragma.api.exception.GlobalExceptionFilter;
 import co.com.crediya.pragma.api.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +12,7 @@ import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -28,12 +27,14 @@ public class RouterRest {
     @RouterOperations({
             @RouterOperation(
                     path = "/api/v1/users",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "listenSaveUser",
                     operation = @Operation(
-                            summary = "Crear un usuario",
-                            description = "Registra un nuevo usuario en el sistema",
+                            operationId = "saveUser",
+                            summary = "Add new user",
+                            description = "Crea un nuevo usuario",
                             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = SaveUserDTO.class))
@@ -41,65 +42,34 @@ public class RouterRest {
                             responses = {
                                     @ApiResponse(
                                             responseCode = "201",
-                                            description = "Usuario creado exitosamente",
-                                            content = @Content(schema = @Schema(implementation = SaveUserDTO.class))
+                                            description = "User created successfully",
+                                            content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Error de validación",
+                                            description = "Validation error",
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
                                     )
                             }
                     )
             ),
+
             @RouterOperation(
                     path = "/api/v1/users",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
                     method = RequestMethod.GET,
                     beanClass = Handler.class,
                     beanMethod = "listenGetAllUsers",
-                    operation = @Operation(summary = "Listar todos los usuarios")
-            ),
-            @RouterOperation(
-                    path = "/api/v1/users/{id}",
-                    method = RequestMethod.GET,
-                    beanClass = Handler.class,
-                    beanMethod = "listenGetUserById",
                     operation = @Operation(
-                            summary = "Buscar usuario por ID",
-                            parameters = {
-                                    @Parameter(
-                                            name = "id",
-                                            description = "Identificador del usuario",
-                                            required = true,
-                                            in = ParameterIn.PATH,
-                                            schema = @Schema(type = "integer")
-                                    )
-                            },
+                            operationId = "getAllUsers",
+                            summary = "Get all users",
+                            description = "Obtiene la lista de todos los usuarios",
                             responses = {
-                                    @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
-                                    @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-                            }
-                    )
-            ),
-            @RouterOperation(
-                    path = "/api/v1/users/{id}",
-                    method = RequestMethod.DELETE,
-                    beanClass = Handler.class,
-                    beanMethod = "listenDeleteUser",
-                    operation = @Operation(
-                            summary = "Eliminar usuario por ID",
-                            parameters = {
-                                    @Parameter(
-                                            name = "id",
-                                            description = "Identificador del usuario",
-                                            required = true,
-                                            in = ParameterIn.PATH,
-                                            schema = @Schema(type = "integer")
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "List of users",
+                                            content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
                                     )
-                            },
-                            responses = {
-                                    @ApiResponse(responseCode = "204", description = "Usuario eliminado"),
-                                    @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
                             }
                     )
             )

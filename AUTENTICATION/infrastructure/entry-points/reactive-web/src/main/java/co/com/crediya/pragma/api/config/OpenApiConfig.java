@@ -13,11 +13,11 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Authentication API")
-                        .description("API para la gestión de usuarios y roles")
+                        .title("CrediYa Autentication")
+                        .description("API para el registro de usuarios")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("Equipo Backend")
-                                .email("soporte@crediya.com")));
+                                .name("Backend Microservicio")
+                                .email("pragma@pragma.com")));
     }
 }

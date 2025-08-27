@@ -1,6 +1,7 @@
 package co.com.crediya.pragma.usecase.user;
 
 import co.com.crediya.pragma.model.user.User;
+import co.com.crediya.pragma.model.user.exception.EmailAlreadyExistsException;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -13,9 +14,15 @@ public class UserUseCase {
 
     private final UserRepository userRepository;
 
-    public Mono<User> saveUser(User user){
-        return userRepository.saveUser(user);
+    public Mono<User> saveUser(User user) {
+        String normalized = user.getEmail() == null ? null : user.getEmail().trim().toLowerCase();
+
+        return userRepository.getUserByEmail(normalized)
+                .flatMap(existing -> Mono.<User>error(new EmailAlreadyExistsException(normalized)))
+                .switchIfEmpty(userRepository.saveUser(user));
     }
+
+
     public Flux<User> getAllUsers(){
         return userRepository.getAllUsers();
     }
