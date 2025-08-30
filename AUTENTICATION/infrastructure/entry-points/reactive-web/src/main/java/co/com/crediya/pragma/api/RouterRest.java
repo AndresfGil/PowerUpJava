@@ -1,5 +1,7 @@
 package co.com.crediya.pragma.api;
 
+import co.com.crediya.pragma.api.dto.LoginDTO;
+import co.com.crediya.pragma.api.dto.LoginResponseDTO;
 import co.com.crediya.pragma.api.dto.SaveUserDTO;
 import co.com.crediya.pragma.api.dto.UserResponseDTO;
 import co.com.crediya.pragma.api.exception.GlobalExceptionFilter;
@@ -26,6 +28,60 @@ public class RouterRest {
     @Bean
     @RouterOperations({
             @RouterOperation(
+                    path = "/api/v1/login",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "listenLogin",
+                    operation = @Operation(
+                            operationId = "login",
+                            summary = "User login",
+                            description = "Autentica un usuario con email y contraseña. Retorna un token JWT que debe usarse en endpoints protegidos.",
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = LoginDTO.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Login successful",
+                                            content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Invalid credentials",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                                    )
+                            }
+                    )
+            ),
+
+            @RouterOperation(
+                    path = "/api/v1/validate-token",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    method = RequestMethod.GET,
+                    beanClass = Handler.class,
+                    beanMethod = "listenValidateToken",
+                    operation = @Operation(
+                            operationId = "validateToken",
+                            summary = "Validate JWT token",
+                            description = "Valida un token JWT y retorna información del usuario. Requiere autenticación.",
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Token valid",
+                                            content = @Content(schema = @Schema(implementation = Object.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Invalid token",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                                    )
+                            }
+                    )
+            ),
+
+            @RouterOperation(
                     path = "/api/v1/users",
                     produces = MediaType.APPLICATION_JSON_VALUE,
                     method = RequestMethod.POST,
@@ -34,7 +90,7 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "saveUser",
                             summary = "Add new user",
-                            description = "Crea un nuevo usuario",
+                            description = "Crea un nuevo usuario. Solo ADMIN y ASESOR pueden crear usuarios.",
                             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = SaveUserDTO.class))
@@ -48,6 +104,11 @@ public class RouterRest {
                                     @ApiResponse(
                                             responseCode = "400",
                                             description = "Validation error",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "403",
+                                            description = "Forbidden - Insufficient permissions",
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
                                     )
                             }
@@ -63,22 +124,28 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "getAllUsers",
                             summary = "Get all users",
-                            description = "Obtiene la lista de todos los usuarios",
+                            description = "Obtiene la lista de todos los usuarios. Requiere autenticación.",
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
                                             description = "List of users",
                                             content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Unauthorized - Invalid token",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
                                     )
                             }
                     )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler, GlobalExceptionFilter filter) {
-        return route(POST("/api/v1/users"), handler::listenSaveUser)
+        return route(POST("/api/v1/login"), handler::listenLogin)
+                .andRoute(GET("/api/v1/login"), handler::listenLogin)
+                .andRoute(GET("/api/v1/validate-token"), handler::listenValidateToken)
+                .andRoute(POST("/api/v1/users"), handler::listenSaveUser)
                 .andRoute(GET("/api/v1/users"), handler::listenGetAllUsers)
-                .andRoute(GET("/api/v1/users/{id}"), handler::listenGetUserById)
-                .andRoute(DELETE("/api/v1/users/{id}"), handler::listenDeleteUser)
                 .filter(filter);
     }
 }

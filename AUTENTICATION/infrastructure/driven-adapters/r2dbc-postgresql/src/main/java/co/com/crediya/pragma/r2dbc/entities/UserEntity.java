@@ -20,6 +20,8 @@ public class UserEntity {
     private String name;
     private String lastname;
     private String email;
+    private String password;
+
 
     @Column("document_id")
     private String documentId;

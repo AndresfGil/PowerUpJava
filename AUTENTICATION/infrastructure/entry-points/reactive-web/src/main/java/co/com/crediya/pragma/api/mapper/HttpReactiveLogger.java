@@ -11,7 +11,7 @@ public final class HttpReactiveLogger {
 
     public static <T> Mono<T> logMono(ServerRequest req, Mono<T> mono, String action) {
         long t0 = System.currentTimeMillis();
-        String method = req.methodName();
+        String method = req.method() != null ? req.method().name() : "UNKNOWN";
         String path = req.path();
         log.info("{} {} - {} - request received", method, path, action);
         return mono

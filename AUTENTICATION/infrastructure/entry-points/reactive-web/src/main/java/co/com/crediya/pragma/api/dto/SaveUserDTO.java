@@ -27,6 +27,11 @@ public class SaveUserDTO {
     @Size(max = 180, message = "El email no puede exceder 180 caracteres")
     private String email;
 
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    private String password;
+
     @NotNull(message = "El salario base es obligatorio")
     @DecimalMin(value = "1", message = "El salario debe ser mayor o igual a 0")
     @DecimalMax(value = "15000000", message = "El salario no puede exceder 15,000,000")
