@@ -65,5 +65,10 @@ jwt:
   secret: "yJ3rjUq8TpwA7mSz8pQ4n0uFhUnX0cUj5jC0hvQz07w"
   expiration: 86400000  # 24 horas
 
+# App Configuration
+app:
+  issuer: "PowerUp"
+  audience: "PowerUp-API"
+
 
 

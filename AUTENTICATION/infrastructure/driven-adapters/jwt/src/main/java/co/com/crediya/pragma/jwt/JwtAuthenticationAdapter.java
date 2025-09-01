@@ -26,6 +26,12 @@ public class JwtAuthenticationAdapter implements AuthenticationGateway {
     @Value("${jwt.expiration:86400000}")
     private long jwtExpiration;
 
+    @Value("${app.issuer:PowerUp}")
+    private String issuer;
+
+    @Value("${app.audience:PowerUp-API}")
+    private String audience;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
@@ -44,6 +50,8 @@ public class JwtAuthenticationAdapter implements AuthenticationGateway {
             return Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getEmail())
+                    .setIssuer(issuer)
+                    .setAudience(audience)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                     .signWith(getSigningKey(), SignatureAlgorithm.HS256)

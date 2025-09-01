@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -57,31 +58,6 @@ public class RouterRest {
             ),
 
             @RouterOperation(
-                    path = "/api/v1/validate-token",
-                    produces = MediaType.APPLICATION_JSON_VALUE,
-                    method = RequestMethod.GET,
-                    beanClass = Handler.class,
-                    beanMethod = "listenValidateToken",
-                    operation = @Operation(
-                            operationId = "validateToken",
-                            summary = "Validate JWT token",
-                            description = "Valida un token JWT y retorna información del usuario. Requiere autenticación.",
-                            responses = {
-                                    @ApiResponse(
-                                            responseCode = "200",
-                                            description = "Token valid",
-                                            content = @Content(schema = @Schema(implementation = Object.class))
-                                    ),
-                                    @ApiResponse(
-                                            responseCode = "401",
-                                            description = "Invalid token",
-                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-                                    )
-                            }
-                    )
-            ),
-
-            @RouterOperation(
                     path = "/api/v1/users",
                     produces = MediaType.APPLICATION_JSON_VALUE,
                     method = RequestMethod.POST,
@@ -91,6 +67,7 @@ public class RouterRest {
                             operationId = "saveUser",
                             summary = "Add new user",
                             description = "Crea un nuevo usuario. Solo ADMIN y ASESOR pueden crear usuarios.",
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = SaveUserDTO.class))
@@ -104,6 +81,11 @@ public class RouterRest {
                                     @ApiResponse(
                                             responseCode = "400",
                                             description = "Validation error",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Unauthorized - Invalid token",
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
                                     ),
                                     @ApiResponse(
@@ -125,6 +107,7 @@ public class RouterRest {
                             operationId = "getAllUsers",
                             summary = "Get all users",
                             description = "Obtiene la lista de todos los usuarios. Requiere autenticación.",
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",

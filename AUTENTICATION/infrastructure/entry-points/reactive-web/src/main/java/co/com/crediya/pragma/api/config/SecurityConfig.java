@@ -18,13 +18,7 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/login").permitAll()
-                        .pathMatchers("/api/v1/validate-token").permitAll()
-                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-resources/**").permitAll()
-                        .pathMatchers("/actuator/**").permitAll()
-                        .pathMatchers("/webjars/**").permitAll()
-                        .pathMatchers("/favicon.ico").permitAll()
-                        .pathMatchers("/").permitAll()
+                        // Permitir todos los endpoints
                         .anyExchange().permitAll()
                 )
                 .build();
