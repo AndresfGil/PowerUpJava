@@ -118,6 +118,34 @@ public class Handler {
         return HttpReactiveLogger.logMono(req, flow, "token validado");
     }
 
+    public Mono<ServerResponse> listenGetUserByEmail(ServerRequest req) {
+        log.info("Iniciando consulta de usuario autenticado - Path: {}", req.path());
+
+        Mono<ServerResponse> flow = extractTokenFromRequest(req)
+                .flatMap(loginUseCase::getUserFromToken)
+                .doOnNext(user -> log.info("Usuario autenticado: {}", user.getEmail()))
+                .flatMap(authenticatedUser -> {
+                    String email = authenticatedUser.getEmail();
+                    log.info("Consultando información del usuario autenticado: {}", email);
+                    
+                    return userUseCase.getUserByEmail(email)
+                            .doOnNext(foundUser -> log.info("Usuario encontrado: {}", foundUser.getEmail()))
+                            .doOnError(error -> log.error("Error al consultar usuario: {}", error.getMessage()))
+                            .flatMap(foundUser -> ServerResponse.ok()
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .bodyValue(Map.of(
+                                            "email", foundUser.getEmail(),
+                                            "name", foundUser.getName(),
+                                            "lastname", foundUser.getLastname(),
+                                            "rolId", foundUser.getRolId(),
+                                            "documentId", foundUser.getDocumentId()
+                                    )))
+                            .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
+                });
+
+        return HttpReactiveLogger.logMono(req, flow, "consultar usuario autenticado");
+    }
+
 
     private Mono<String> extractTokenFromRequest(ServerRequest req) {
         log.info("Extrayendo token de headers: {}", req.headers().firstHeader("Authorization"));

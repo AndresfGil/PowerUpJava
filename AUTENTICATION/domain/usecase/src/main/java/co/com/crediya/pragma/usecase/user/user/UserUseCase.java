@@ -47,8 +47,8 @@ public class UserUseCase {
         return userRepository.getAllUsers();
     }
 
-    public Mono<User> getUserByIdNumber(Long idNumber){
-        return userRepository.getUserByIdNumber(idNumber);
+    public Mono<User> getUserByEmail(String email){
+        return userRepository.getUserByEmail(email);
     }
 
     public Mono<Void> deleteUser(Long idNumber){

@@ -10,8 +10,6 @@ public interface UserRepository {
 
     Flux<User> getAllUsers();
 
-    Mono<User> getUserByIdNumber(Long number);
-
     Mono<User> getUserByEmail(String email);
 
     Mono<Void> deleteUser(Long idNumber);

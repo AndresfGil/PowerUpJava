@@ -51,10 +51,6 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         return ReactiveLogger.logFlux(super.findAll(), "R2DBC getAllUsers");
     }
 
-    @Override
-    public Mono<User> getUserByIdNumber(Long number) {
-        return super.findById(number);
-    }
 
     @Override
     public Mono<User> getUserByEmail(String email) {
