@@ -1,19 +1,19 @@
 package co.com.crediya.pragma.api.exception;
 
-import co.com.crediya.pragma.model.user.exception.BaseException;
-import co.com.crediya.pragma.model.user.exception.ValidationException;
+import java.util.List;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import reactor.core.publisher.Mono;
 import org.springframework.lang.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import co.com.crediya.pragma.model.user.exception.BaseException;
 import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.reactive.function.server.HandlerFilterFunction;
-import org.springframework.web.reactive.function.server.HandlerFunction;
+import co.com.crediya.pragma.model.user.exception.ValidationException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Mono;
-
-import java.util.stream.Collectors;
+import org.springframework.web.reactive.function.server.HandlerFunction;
+import org.springframework.web.reactive.function.server.HandlerFilterFunction;
 
 @Slf4j
 @Component
@@ -41,7 +41,7 @@ public class GlobalExceptionFilter implements HandlerFilterFunction<ServerRespon
                 .onErrorResume(WebExchangeBindException.class, ex -> {
                     var errors = ex.getFieldErrors().stream()
                             .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                            .collect(Collectors.toList());
+                            .toList();
 
                     var validationEx = new ValidationException(errors);
 
@@ -55,6 +55,32 @@ public class GlobalExceptionFilter implements HandlerFilterFunction<ServerRespon
                                     .errors(validationEx.getErrors())
                                     .status(HttpStatus.valueOf(validationEx.getStatusCode()))
                                     .timestamp(validationEx.getTimestamp())
+                                    .build());
+                })
+
+                .onErrorResume(IllegalArgumentException.class, ex -> {
+                    log.warn("IllegalArgumentException: {} path={}", ex.getMessage(), request.path());
+                    return ServerResponse.status(HttpStatus.BAD_REQUEST)
+                            .bodyValue(ErrorResponse.builder()
+                                    .errorCode("INVALID_ARGUMENT")
+                                    .tittle("Argumento inválido")
+                                    .message(ex.getMessage())
+                                    .errors(List.of(ex.getMessage()))
+                                    .status(HttpStatus.BAD_REQUEST)
+                                    .timestamp(LocalDateTime.now())
+                                    .build());
+                })
+
+                .onErrorResume(Exception.class, ex -> {
+                    log.error("Unhandled exception: {} path={}", ex.getMessage(), request.path(), ex);
+                    return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .bodyValue(ErrorResponse.builder()
+                                    .errorCode("INTERNAL_SERVER_ERROR")
+                                    .tittle("Error interno del servidor")
+                                    .message("Ha ocurrido un error interno. Por favor, inténtelo más tarde.")
+                                    .errors(List.of("Error interno del servidor"))
+                                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                    .timestamp(LocalDateTime.now())
                                     .build());
                 });
     }

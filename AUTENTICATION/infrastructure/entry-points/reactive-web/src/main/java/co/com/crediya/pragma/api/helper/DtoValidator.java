@@ -23,7 +23,7 @@ public class DtoValidator {
                     .map(v -> v.getPropertyPath() + " " + v.getMessage())
                     .toList();
 
-            return Mono.error(new ValidationException(errors)); // 👈 excepción custom
+            return Mono.error(new ValidationException(errors));
         }
         return Mono.just(dto);
     }

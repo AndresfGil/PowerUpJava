@@ -2,6 +2,7 @@ package co.com.crediya.pragma.usecase.user;
 
 import co.com.crediya.pragma.model.user.User;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.usecase.user.user.UserUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

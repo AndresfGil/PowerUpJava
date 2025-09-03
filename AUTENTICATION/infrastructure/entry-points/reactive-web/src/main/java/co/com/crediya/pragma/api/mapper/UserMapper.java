@@ -13,6 +13,7 @@ public class UserMapper {
                 .name(trim(dto.getName()))
                 .lastname(trim(dto.getLastname()))
                 .email(lower(trim(dto.getEmail())))
+                .password(dto.getPassword())
                 .documentId(trim(dto.getDocumentId()))
                 .phone(trim(dto.getPhone()))
                 .address(trim(dto.getAddress()))

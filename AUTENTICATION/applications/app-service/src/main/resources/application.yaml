@@ -23,12 +23,12 @@ spring:
     placeholders:
       db: "${adapters.r2dbc.database}"
 
-    springdoc:
-      api-docs:
-        enabled: true
-      swagger-ui:
-        enabled: true
-        path: /swagger-ui.html
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
 
 r2dbc:
   url: "r2dbc:mysql://${adapters.r2dbc.host}:${adapters.r2dbc.port}/${adapters.r2dbc.database}"
@@ -59,4 +59,16 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+# JWT Configuration
+jwt:
+  secret: "yJ3rjUq8TpwA7mSz8pQ4n0uFhUnX0cUj5jC0hvQz07w"
+  expiration: 86400000  # 24 horas
+
+# App Configuration
+app:
+  issuer: "PowerUp"
+  audience: "PowerUp-API"
+
+
 

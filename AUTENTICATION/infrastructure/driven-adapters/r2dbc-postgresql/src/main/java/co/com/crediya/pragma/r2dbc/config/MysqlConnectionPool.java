@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import io.r2dbc.spi.ConnectionFactory;
 import org.mariadb.r2dbc.SslMode;
-
 import java.time.Duration;
 
 @Configuration

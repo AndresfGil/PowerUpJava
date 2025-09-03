@@ -39,7 +39,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         return super.save(user)
                 .doOnSuccess(u -> log.info("R2DBC saveUser ok id={} email={} elapsedMs={}",
                         u.getUserId(), normalized, System.currentTimeMillis() - t0))
-                .doOnError(e -> log.warn("R2DBC saveUser fail email={} elapsedMs={} err={}",
+                .doOnError(e -> log.error("R2DBC saveUser fail email={} elapsedMs={} err={}",
                         normalized, System.currentTimeMillis() - t0, e.toString()))
                 .as(transactionalOperator::transactional);
     }
