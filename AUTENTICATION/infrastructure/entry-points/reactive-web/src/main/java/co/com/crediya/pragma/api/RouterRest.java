@@ -121,45 +121,14 @@ public class RouterRest {
                                     )
                             }
                     )
-            ),
-            @RouterOperation(
-                    path = "/api/v1/users/me",
-                    produces = MediaType.APPLICATION_JSON_VALUE,
-                    method = RequestMethod.GET,
-                    beanClass = Handler.class,
-                    beanMethod = "listenGetUserByEmail",
-                    operation = @Operation(
-                            operationId = "getCurrentUser",
-                            summary = "Get current user information",
-                            description = "Obtiene la información del usuario autenticado usando su token. No requiere parámetros adicionales.",
-                            security = @SecurityRequirement(name = "bearerAuth"),
-                            responses = {
-                                    @ApiResponse(
-                                            responseCode = "200",
-                                            description = "User information retrieved",
-                                            content = @Content(schema = @Schema(implementation = Object.class))
-                                    ),
-                                    @ApiResponse(
-                                            responseCode = "401",
-                                            description = "Unauthorized - Invalid token",
-                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-                                    ),
-                                    @ApiResponse(
-                                            responseCode = "500",
-                                            description = "Internal server error",
-                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-                                    )
-                            }
-                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler, GlobalExceptionFilter filter) {
         return route(POST("/api/v1/login"), handler::listenLogin)
-                .andRoute(GET("/api/v1/login"), handler::listenLogin)
                 .andRoute(GET("/api/v1/validate-token"), handler::listenValidateToken)
                 .andRoute(POST("/api/v1/users"), handler::listenSaveUser)
                 .andRoute(GET("/api/v1/users"), handler::listenGetAllUsers)
-                .andRoute(GET("/api/v1/users/me"), handler::listenGetUserByEmail)
+                .andRoute(GET("/api/v1/users/me"), handler::listenGetUserByToken)
                 .filter(filter);
     }
 }

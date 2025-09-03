@@ -118,7 +118,7 @@ public class Handler {
         return HttpReactiveLogger.logMono(req, flow, "token validado");
     }
 
-    public Mono<ServerResponse> listenGetUserByEmail(ServerRequest req) {
+    public Mono<ServerResponse> listenGetUserByToken(ServerRequest req) {
         log.info("Iniciando consulta de usuario autenticado - Path: {}", req.path());
 
         Mono<ServerResponse> flow = extractTokenFromRequest(req)
