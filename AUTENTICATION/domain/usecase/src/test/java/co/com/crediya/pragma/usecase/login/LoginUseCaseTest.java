@@ -4,7 +4,6 @@ import co.com.crediya.pragma.model.user.User;
 import co.com.crediya.pragma.model.user.exception.InvalidCredentialsException;
 import co.com.crediya.pragma.model.user.gateways.AuthenticationGateway;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
-import co.com.crediya.pragma.usecase.login.LoginUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -106,6 +105,21 @@ class LoginUseCaseTest {
     @DisplayName("Debe normalizar el email a minúsculas")
     void shouldNormalizeEmailToLowerCase() {
         String email = "JUAN.PEREZ@TEST.COM";
+        String password = "password";
+        String token = "jwt.token.here";
+
+        when(userRepository.getUserByEmail("juan.perez@test.com")).thenReturn(Mono.just(testUser));
+        when(authenticationGateway.generateToken(any(User.class))).thenReturn(Mono.just(token));
+
+        StepVerifier.create(loginUseCase.login(email, password))
+                .expectNext(token)
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe manejar email con espacios en blanco")
+    void shouldHandleEmailWithWhitespace() {
+        String email = "  juan.perez@test.com  ";
         String password = "password";
         String token = "jwt.token.here";
 

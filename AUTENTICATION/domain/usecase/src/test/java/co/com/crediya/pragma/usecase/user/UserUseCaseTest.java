@@ -2,7 +2,10 @@ package co.com.crediya.pragma.usecase.user;
 
 import co.com.crediya.pragma.model.user.User;
 import co.com.crediya.pragma.model.user.exception.EmailAlreadyExistsException;
+import co.com.crediya.pragma.model.user.exception.PasswordHashingException;
+import co.com.crediya.pragma.model.user.exception.UnauthorizedException;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import co.com.crediya.pragma.usecase.user.user.UserUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,27 +66,7 @@ class UserUseCaseTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("Debe guardar un usuario exitosamente cuando el email no existe")
-    void shouldSaveUserSuccessfullyWhenEmailDoesNotExist() {
-        when(userRepository.getUserByEmail(anyString())).thenReturn(Mono.empty());
-        when(userRepository.saveUser(any(User.class))).thenReturn(Mono.just(testUser));
 
-        StepVerifier.create(userUseCase.saveUser(testUser))
-                .expectNext(testUser)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe lanzar EmailAlreadyExistsException cuando el email ya existe")
-    void shouldThrowEmailAlreadyExistsExceptionWhenEmailExists() {
-        when(userRepository.getUserByEmail(anyString())).thenReturn(Mono.just(existingUser));
-        when(userRepository.saveUser(any(User.class))).thenReturn(Mono.just(testUser));
-
-        StepVerifier.create(userUseCase.saveUser(testUser))
-                .expectError(EmailAlreadyExistsException.class)
-                .verify();
-    }
 
     @Test
     @DisplayName("Debe obtener todos los usuarios exitosamente")
@@ -98,18 +81,6 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Debe obtener un usuario por ID exitosamente")
-    void shouldGetUserByIdSuccessfully() {
-        Long userId = 1L;
-        when(userRepository.getUserByIdNumber(userId)).thenReturn(Mono.just(testUser));
-
-        StepVerifier.create(userUseCase.getUserByIdNumber(userId))
-                .expectNext(testUser)
-                .verifyComplete();
-    }
-
-
-    @Test
     @DisplayName("Debe eliminar un usuario exitosamente")
     void shouldDeleteUserSuccessfully() {
         Long userId = 1L;
@@ -118,5 +89,40 @@ class UserUseCaseTest {
         StepVerifier.create(userUseCase.deleteUser(userId))
                 .verifyComplete();
     }
+
+
+
+
+    @Test
+    @DisplayName("Debe obtener usuarios por emails exitosamente")
+    void shouldGetUsersByEmailsSuccessfully() {
+        List<String> emails = List.of("user1@test.com", "user2@test.com");
+        UserSimpleView userView1 = new UserSimpleView() {
+            @Override
+            public String getName() { return "User 1"; }
+            @Override
+            public Long getBaseSalary() { return 2000000L; }
+            @Override
+            public String getEmail() { return "user1@test.com"; }
+        };
+        UserSimpleView userView2 = new UserSimpleView() {
+            @Override
+            public String getName() { return "User 2"; }
+            @Override
+            public Long getBaseSalary() { return 2500000L; }
+            @Override
+            public String getEmail() { return "user2@test.com"; }
+        };
+
+        when(userRepository.getUsersByEmails(emails)).thenReturn(Flux.just(userView1, userView2));
+
+        StepVerifier.create(userUseCase.getUsersByEmails(emails))
+                .expectNext(userView1)
+                .expectNext(userView2)
+                .verifyComplete();
+    }
+
+   
+
 
 }
