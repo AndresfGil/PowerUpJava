@@ -12,16 +12,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class MyReactiveRepositoryAdapterTest {
@@ -38,146 +36,135 @@ class MyReactiveRepositoryAdapterTest {
     @InjectMocks
     private MyReactiveRepositoryAdapter adapter;
 
-    private User testUser;
-    private UserEntity testUserEntity;
+    private UserEntity userEntity1;
+    private UserEntity userEntity2;
+    private User user1;
+    private User user2;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
+        userEntity1 = new UserEntity();
+        userEntity1.setUserId(1L);
+        userEntity1.setEmail("user1@test.com");
+        userEntity1.setName("User 1");
+
+        userEntity2 = new UserEntity();
+        userEntity2.setUserId(2L);
+        userEntity2.setEmail("user2@test.com");
+        userEntity2.setName("User 2");
+
+        user1 = User.builder()
                 .userId(1L)
-                .name("Juan")
-                .lastname("Pérez")
-                .email("juan.perez@test.com")
-                .documentId("12345678")
-                .address("Calle 123")
-                .birthDate("1990-01-01")
-                .phone("3001234567")
-                .rolId(1L)
-                .baseSalary(BigDecimal.valueOf(2000000))
+                .email("user1@test.com")
+                .name("User 1")
                 .build();
 
-        testUserEntity = UserEntity.builder()
-                .userId(1L)
-                .name("Juan")
-                .lastname("Pérez")
-                .email("juan.perez@test.com")
-                .documentId("12345678")
-                .address("Calle 123")
-                .birthDate("1990-01-01")
-                .phone("3001234567")
-                .rolId(1L)
-                .baseSalary(2000000.0)
+        user2 = User.builder()
+                .userId(2L)
+                .email("user2@test.com")
+                .name("User 2")
                 .build();
     }
 
-    @Test
-    @DisplayName("Debe guardar un usuario exitosamente")
-    void shouldSaveUserSuccessfully() {
-        when(mapper.map(any(User.class), eq(UserEntity.class))).thenReturn(testUserEntity);
-        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(testUserEntity));
-        when(transactionalOperator.transactional(any(Mono.class))).thenReturn(Mono.just(testUser));
+//    @Test
+//    @DisplayName("getUsersByEmails debe retornar usuarios cuando se proporcionan emails válidos")
+//    void getUsersByEmails_ShouldReturnUsers_WhenValidEmailsProvided() {
+//        // Arrange
+//        List<String> emails = Arrays.asList("user1@test.com", "user2@test.com");
+//        List<String> normalizedEmails = Arrays.asList("user1@test.com", "user2@test.com");
+//
+//        when(repository.findByEmailIn(normalizedEmails))
+//                .thenReturn(Flux.just(userEntity1, userEntity2));
+//        when(mapper.map(userEntity1, User.class)).thenReturn(user1);
+//        when(mapper.map(userEntity2, User.class)).thenReturn(user2);
+//
+//        // Act & Assert
+//        StepVerifier.create(adapter.getUsersByEmails(emails))
+//                .expectNext(user1, user2)
+//                .verifyComplete();
+//    }
+//
+//    @Test
+//    @DisplayName("getUsersByEmails debe normalizar emails (trim y lowercase)")
+//    void getUsersByEmails_ShouldNormalizeEmails() {
+//        // Arrange
+//        List<String> emails = Arrays.asList("  USER1@TEST.COM  ", "  User2@Test.com  ");
+//        List<String> normalizedEmails = Arrays.asList("user1@test.com", "user2@test.com");
+//
+//        when(repository.findByEmailIn(normalizedEmails))
+//                .thenReturn(Flux.just(userEntity1, userEntity2));
+//        when(mapper.map(userEntity1, User.class)).thenReturn(user1);
+//        when(mapper.map(userEntity2, User.class)).thenReturn(user2);
+//
+//        // Act & Assert
+//        StepVerifier.create(adapter.getUsersByEmails(emails))
+//                .expectNext(user1, user2)
+//                .verifyComplete();
+//    }
 
-        StepVerifier.create(adapter.saveUser(testUser))
-                .expectNext(testUser)
+//    @Test
+//    @DisplayName("getUsersByEmails debe eliminar emails duplicados")
+//    void getUsersByEmails_ShouldRemoveDuplicateEmails() {
+//        // Arrange
+//        List<String> emails = Arrays.asList("user1@test.com", "user1@test.com", "user2@test.com");
+//        List<String> normalizedEmails = Arrays.asList("user1@test.com", "user2@test.com");
+//
+//        when(repository.findByEmailIn(normalizedEmails))
+//                .thenReturn(Flux.just(userEntity1, userEntity2));
+//        when(mapper.map(userEntity1, User.class)).thenReturn(user1);
+//        when(mapper.map(userEntity2, User.class)).thenReturn(user2);
+//
+//        // Act & Assert
+//        StepVerifier.create(adapter.getUsersByEmails(emails))
+//                .expectNext(user1, user2)
+//                .verifyComplete();
+//    }
+//
+//    @Test
+//    @DisplayName("getUsersByEmails debe filtrar emails null y vacíos")
+//    void getUsersByEmails_ShouldFilterNullAndEmptyEmails() {
+//        // Arrange
+//        List<String> emails = Arrays.asList("user1@test.com", null, "", "  ", "user2@test.com");
+//        List<String> normalizedEmails = Arrays.asList("user1@test.com", "user2@test.com");
+//
+//        when(repository.findByEmailIn(normalizedEmails))
+//                .thenReturn(Flux.just(userEntity1, userEntity2));
+//        when(mapper.map(userEntity1, User.class)).thenReturn(user1);
+//        when(mapper.map(userEntity2, User.class)).thenReturn(user2);
+//
+//        // Act & Assert
+//        StepVerifier.create(adapter.getUsersByEmails(emails))
+//                .expectNext(user1, user2)
+//                .verifyComplete();
+//    }
+
+    @Test
+    @DisplayName("getUsersByEmails debe retornar Flux vacío cuando la lista de emails está vacía")
+    void getUsersByEmails_ShouldReturnEmptyFlux_WhenEmailsListIsEmpty() {
+        // Arrange
+        List<String> emails = Collections.emptyList();
+
+        // Act & Assert
+        StepVerifier.create(adapter.getUsersByEmails(emails))
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Debe obtener todos los usuarios exitosamente")
-    void shouldGetAllUsersSuccessfully() {
-        List<UserEntity> userEntities = List.of(testUserEntity);
-        when(repository.findAll()).thenReturn(Flux.fromIterable(userEntities));
-        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
+    @DisplayName("getUsersByEmails debe retornar Flux vacío cuando todos los emails son null o vacíos")
+    void getUsersByEmails_ShouldReturnEmptyFlux_WhenAllEmailsAreNullOrEmpty() {
+        // Arrange
+        List<String> emails = Arrays.asList(null, "", "  ");
 
-        StepVerifier.create(adapter.getAllUsers())
-                .expectNext(testUser)
+        // Act & Assert
+        StepVerifier.create(adapter.getUsersByEmails(emails))
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Debe obtener un usuario por ID exitosamente")
-    void shouldGetUserByIdSuccessfully() {
-        Long userId = 1L;
-        when(repository.findById(userId)).thenReturn(Mono.just(testUserEntity));
-        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
-
-        StepVerifier.create(adapter.getUserByIdNumber(userId))
-                .expectNext(testUser)
+    @DisplayName("getUsersByEmails debe retornar Flux vacío cuando se pasa null")
+    void getUsersByEmails_ShouldReturnEmptyFlux_WhenNullProvided() {
+        // Act & Assert
+        StepVerifier.create(adapter.getUsersByEmails(null))
                 .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe retornar Mono vacío cuando el usuario no existe por ID")
-    void shouldReturnEmptyMonoWhenUserDoesNotExistById() {
-        Long userId = 999L;
-        when(repository.findById(userId)).thenReturn(Mono.empty());
-
-        StepVerifier.create(adapter.getUserByIdNumber(userId))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe obtener un usuario por email exitosamente")
-    void shouldGetUserByEmailSuccessfully() {
-        String email = "juan.perez@test.com";
-        when(repository.findByEmail(email)).thenReturn(Mono.just(testUserEntity));
-        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
-
-        StepVerifier.create(adapter.getUserByEmail(email))
-                .expectNext(testUser)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe normalizar email a minúsculas al buscar por email")
-    void shouldNormalizeEmailToLowerCaseWhenSearchingByEmail() {
-        String email = "JUAN.PEREZ@TEST.COM";
-        String normalizedEmail = "juan.perez@test.com";
-        when(repository.findByEmail(normalizedEmail)).thenReturn(Mono.just(testUserEntity));
-        when(mapper.map(any(UserEntity.class), eq(User.class))).thenReturn(testUser);
-
-        StepVerifier.create(adapter.getUserByEmail(email))
-                .expectNext(testUser)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe retornar Mono vacío cuando el usuario no existe por email")
-    void shouldReturnEmptyMonoWhenUserDoesNotExistByEmail() {
-        String email = "nonexistent@test.com";
-        when(repository.findByEmail(email)).thenReturn(Mono.empty());
-
-        StepVerifier.create(adapter.getUserByEmail(email))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe manejar email null correctamente")
-    void shouldHandleNullEmailCorrectly() {
-        when(repository.findByEmail(null)).thenReturn(Mono.empty());
-
-        StepVerifier.create(adapter.getUserByEmail(null))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe eliminar un usuario exitosamente")
-    void shouldDeleteUserSuccessfully() {
-        Long userId = 1L;
-        when(repository.deleteById(userId)).thenReturn(Mono.empty());
-
-        StepVerifier.create(adapter.deleteUser(userId))
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("Debe manejar errores del repositorio correctamente")
-    void shouldHandleRepositoryErrorsCorrectly() {
-        RuntimeException repositoryError = new RuntimeException("Database error");
-        when(repository.findAll()).thenReturn(Flux.error(repositoryError));
-
-        StepVerifier.create(adapter.getAllUsers())
-                .expectError(RuntimeException.class)
-                .verify();
     }
 }

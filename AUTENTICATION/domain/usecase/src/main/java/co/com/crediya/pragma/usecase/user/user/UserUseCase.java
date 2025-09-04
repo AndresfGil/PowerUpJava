@@ -5,12 +5,14 @@ import co.com.crediya.pragma.model.user.exception.EmailAlreadyExistsException;
 import co.com.crediya.pragma.model.user.exception.PasswordHashingException;
 import co.com.crediya.pragma.model.user.exception.UnauthorizedException;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -49,6 +51,10 @@ public class UserUseCase {
 
     public Mono<User> getUserByEmail(String email){
         return userRepository.getUserByEmail(email);
+    }
+
+    public Flux<UserSimpleView> getUsersByEmails(List<String> correosElectronicos) {
+        return userRepository.getUsersByEmails(correosElectronicos);
     }
 
     public Mono<Void> deleteUser(Long idNumber){

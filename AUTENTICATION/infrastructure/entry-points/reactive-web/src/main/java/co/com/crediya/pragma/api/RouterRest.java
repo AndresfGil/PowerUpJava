@@ -23,6 +23,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+
 @Configuration
 public class RouterRest {
 
@@ -129,6 +130,7 @@ public class RouterRest {
                 .andRoute(POST("/api/v1/users"), handler::listenSaveUser)
                 .andRoute(GET("/api/v1/users"), handler::listenGetAllUsers)
                 .andRoute(GET("/api/v1/users/me"), handler::listenGetUserByToken)
+                .andRoute(POST("/api/v1/users/batch"), handler::listenGetUsersByEmails)
                 .filter(filter);
     }
 }

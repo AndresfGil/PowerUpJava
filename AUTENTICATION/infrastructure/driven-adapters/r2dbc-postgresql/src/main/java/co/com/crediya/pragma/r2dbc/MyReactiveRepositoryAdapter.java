@@ -2,6 +2,7 @@ package co.com.crediya.pragma.r2dbc;
 
 import co.com.crediya.pragma.model.user.User;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import co.com.crediya.pragma.r2dbc.entities.UserEntity;
 import co.com.crediya.pragma.r2dbc.helper.ReactiveAdapterOperations;
 import co.com.crediya.pragma.r2dbc.helper.ReactiveLogger;
@@ -12,6 +13,8 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Slf4j
 @Repository
 public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
@@ -19,8 +22,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         UserEntity,
         Long,
     MyReactiveRepository
-> implements UserRepository
-{
+> implements UserRepository {
     private final TransactionalOperator transactionalOperator;
 
 
@@ -45,7 +47,6 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
 
-
     @Override
     public Flux<User> getAllUsers() {
         return ReactiveLogger.logFlux(super.findAll(), "R2DBC getAllUsers");
@@ -61,8 +62,15 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                 .switchIfEmpty(Mono.empty());
     }
 
+
     @Override
     public Mono<Void> deleteUser(Long idNumber) {
         return repository.deleteById(idNumber);
     }
+
+    @Override
+    public Flux<UserSimpleView> getUsersByEmails(List<String> emails) {
+        return super.repository.findLiteByCorreoElectronicoIn(emails);
+    }
+
 }

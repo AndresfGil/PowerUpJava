@@ -3,6 +3,7 @@ package co.com.crediya.pragma.api;
 import co.com.crediya.pragma.api.dto.LoginDTO;
 import co.com.crediya.pragma.api.dto.SaveUserDTO;
 import co.com.crediya.pragma.api.dto.UserResponseDTO;
+import co.com.crediya.pragma.api.dto.BatchUsersRequestDTO;
 import co.com.crediya.pragma.api.helper.DtoValidator;
 import co.com.crediya.pragma.api.mapper.HttpReactiveLogger;
 import co.com.crediya.pragma.api.mapper.LoginMapper;
@@ -144,6 +145,29 @@ public class Handler {
                 });
 
         return HttpReactiveLogger.logMono(req, flow, "consultar usuario autenticado");
+    }
+
+    public Mono<ServerResponse> listenGetUsersByEmails(ServerRequest req) {
+        log.info("Iniciando getUsersByEmails batch - Path: {}", req.path());
+
+        Mono<ServerResponse> flow = extractTokenFromRequest(req)
+                .doOnNext(token -> log.info("Token extraído: {}", token.substring(0, Math.min(token.length(), 20)) + "..."))
+                .flatMap(loginUseCase::getUserFromToken)
+                .doOnNext(user -> log.info("Usuario autenticado: {}", user.getEmail()))
+                .then(req.bodyToMono(BatchUsersRequestDTO.class)
+                        .doOnNext(batchRequest -> log.info("Procesando batch de {} emails", batchRequest.emails().size()))
+                        .flatMap(batchRequest -> userUseCase.getUsersByEmails(batchRequest.emails())
+                                .collectList()
+                                .doOnNext(users -> log.info("Encontrados {} usuarios del batch", users.size()))
+                                .flatMap(users -> ServerResponse.ok()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(Map.of(
+                                                "totalRequested", batchRequest.emails().size(),
+                                                "totalFound", users.size(),
+                                                "users", users
+                                        )))));
+
+        return HttpReactiveLogger.logMono(req, flow, "get users batch");
     }
 
 
