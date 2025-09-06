@@ -1,133 +1,113 @@
 package co.com.crediya.pragma.usecase.login;
 
-import co.com.crediya.pragma.model.user.User;
-import co.com.crediya.pragma.model.user.exception.InvalidCredentialsException;
-import co.com.crediya.pragma.model.user.gateways.AuthenticationGateway;
-import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.model.user.login.AuthTokens;
+import co.com.crediya.pragma.model.user.login.gateway.LoginService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
 
     @Mock
-    private UserRepository userRepository;
+    private LoginService loginService;
 
-    @Mock
-    private AuthenticationGateway authenticationGateway;
-
-    @InjectMocks
     private LoginUseCase loginUseCase;
-
-    private User testUser;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .userId(1L)
-                .name("Juan")
-                .lastname("Pérez")
-                .email("juan.perez@test.com")
-                .password("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8")
-                .documentId("12345678")
-                .rolId(3L)
-                .baseSalary(BigDecimal.valueOf(2000000))
-                .build();
+        loginUseCase = new LoginUseCase(loginService);
     }
 
     @Test
-    @DisplayName("Debe hacer login exitosamente con credenciales válidas")
-    void shouldLoginSuccessfullyWithValidCredentials() {
-        String email = "juan.perez@test.com";
-        String password = "password";
-        String token = "jwt.token.here";
+    void testLoginSuccess() {
+        String email = "test@example.com";
+        String password = "password123";
+        AuthTokens expectedTokens = new AuthTokens("token123", Instant.now().plusSeconds(3600), 60L);
 
-        when(userRepository.getUserByEmail(email)).thenReturn(Mono.just(testUser));
-        when(authenticationGateway.generateToken(any(User.class))).thenReturn(Mono.just(token));
+        when(loginService.login(email, password)).thenReturn(Mono.just(expectedTokens));
 
         StepVerifier.create(loginUseCase.login(email, password))
-                .expectNext(token)
+                .expectNext(expectedTokens)
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Debe lanzar InvalidCredentialsException cuando el usuario no existe")
-    void shouldThrowInvalidCredentialsExceptionWhenUserNotFound() {
-        String email = "nonexistent@test.com";
-        String password = "password";
+    void testLoginFailure() {
+        String email = "test@example.com";
+        String password = "wrongpassword";
 
-        when(userRepository.getUserByEmail(email)).thenReturn(Mono.empty());
+        when(loginService.login(email, password)).thenReturn(Mono.error(new RuntimeException("Invalid credentials")));
 
         StepVerifier.create(loginUseCase.login(email, password))
-                .expectError(InvalidCredentialsException.class)
+                .expectError(RuntimeException.class)
                 .verify();
     }
 
     @Test
-    @DisplayName("Debe lanzar InvalidCredentialsException cuando la contraseña es incorrecta")
-    void shouldThrowInvalidCredentialsExceptionWhenPasswordIsWrong() {
-        String email = "juan.perez@test.com";
-        String wrongPassword = "wrongpassword";
+    void testLoginWithNullEmail() {
+        String password = "password123";
 
-        when(userRepository.getUserByEmail(email)).thenReturn(Mono.just(testUser));
+        when(loginService.login(null, password)).thenReturn(Mono.error(new IllegalArgumentException("Email cannot be null")));
 
-        StepVerifier.create(loginUseCase.login(email, wrongPassword))
-                .expectError(InvalidCredentialsException.class)
+        StepVerifier.create(loginUseCase.login(null, password))
+                .expectError(IllegalArgumentException.class)
                 .verify();
     }
 
     @Test
-    @DisplayName("Debe obtener usuario del token exitosamente")
-    void shouldGetUserFromTokenSuccessfully() {
-        String token = "valid.jwt.token";
+    void testLoginWithNullPassword() {
+        String email = "test@example.com";
 
-        when(authenticationGateway.validateToken(token)).thenReturn(Mono.just(testUser));
+        when(loginService.login(email, null)).thenReturn(Mono.error(new IllegalArgumentException("Password cannot be null")));
 
-        StepVerifier.create(loginUseCase.getUserFromToken(token))
-                .expectNext(testUser)
-                .verifyComplete();
+        StepVerifier.create(loginUseCase.login(email, null))
+                .expectError(IllegalArgumentException.class)
+                .verify();
     }
 
     @Test
-    @DisplayName("Debe normalizar el email a minúsculas")
-    void shouldNormalizeEmailToLowerCase() {
-        String email = "JUAN.PEREZ@TEST.COM";
-        String password = "password";
-        String token = "jwt.token.here";
+    void testLoginWithEmptyEmail() {
+        String email = "";
+        String password = "password123";
 
-        when(userRepository.getUserByEmail("juan.perez@test.com")).thenReturn(Mono.just(testUser));
-        when(authenticationGateway.generateToken(any(User.class))).thenReturn(Mono.just(token));
+        when(loginService.login(email, password)).thenReturn(Mono.error(new IllegalArgumentException("Email cannot be empty")));
 
         StepVerifier.create(loginUseCase.login(email, password))
-                .expectNext(token)
-                .verifyComplete();
+                .expectError(IllegalArgumentException.class)
+                .verify();
     }
 
     @Test
-    @DisplayName("Debe manejar email con espacios en blanco")
-    void shouldHandleEmailWithWhitespace() {
-        String email = "  juan.perez@test.com  ";
-        String password = "password";
-        String token = "jwt.token.here";
+    void testLoginWithEmptyPassword() {
+        String email = "test@example.com";
+        String password = "";
 
-        when(userRepository.getUserByEmail("juan.perez@test.com")).thenReturn(Mono.just(testUser));
-        when(authenticationGateway.generateToken(any(User.class))).thenReturn(Mono.just(token));
+        when(loginService.login(email, password)).thenReturn(Mono.error(new IllegalArgumentException("Password cannot be empty")));
 
         StepVerifier.create(loginUseCase.login(email, password))
-                .expectNext(token)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
+    void testLoginServiceCalledWithCorrectParameters() {
+        String email = "test@example.com";
+        String password = "password123";
+        AuthTokens expectedTokens = new AuthTokens("token123", Instant.now().plusSeconds(3600), 60L);
+
+        when(loginService.login(email, password)).thenReturn(Mono.just(expectedTokens));
+
+        StepVerifier.create(loginUseCase.login(email, password))
+                .expectNext(expectedTokens)
                 .verifyComplete();
     }
 }

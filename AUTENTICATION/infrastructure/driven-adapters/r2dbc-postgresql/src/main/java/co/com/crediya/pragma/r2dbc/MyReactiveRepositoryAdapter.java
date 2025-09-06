@@ -5,9 +5,9 @@ import co.com.crediya.pragma.model.user.gateways.UserRepository;
 import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import co.com.crediya.pragma.r2dbc.entities.UserEntity;
 import co.com.crediya.pragma.r2dbc.helper.ReactiveAdapterOperations;
-import co.com.crediya.pragma.r2dbc.helper.ReactiveLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -21,14 +21,17 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         User,
         UserEntity,
         Long,
-    MyReactiveRepository
+        MyReactiveRepository
 > implements UserRepository {
     private final TransactionalOperator transactionalOperator;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public MyReactiveRepositoryAdapter(MyReactiveRepository repository, ObjectMapper mapper, TransactionalOperator transactionalOperator) {
+
+    public MyReactiveRepositoryAdapter(MyReactiveRepository repository, ObjectMapper mapper, TransactionalOperator transactionalOperator, PasswordEncoder passwordEncoder) {
         super(repository, mapper, d -> mapper.map(d, User.class));
         this.transactionalOperator = transactionalOperator;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -38,7 +41,21 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
 
         log.debug("R2DBC saveUser start email={}", normalized);
 
-        return super.save(user)
+        User userToSave = new User(
+                user.getUserId(),
+                normalized,
+                passwordEncoder.encode(user.getPassword()),
+                user.getName(),
+                user.getLastname(),
+                user.getRolId(),
+                user.getDocumentId(),
+                user.getBaseSalary(),
+                user.getAddress(),
+                user.getPhone(),
+                user.getBirthDate()
+        );
+
+        return super.save(userToSave)
                 .doOnSuccess(u -> log.info("R2DBC saveUser ok id={} email={} elapsedMs={}",
                         u.getUserId(), normalized, System.currentTimeMillis() - t0))
                 .doOnError(e -> log.error("R2DBC saveUser fail email={} elapsedMs={} err={}",
@@ -47,10 +64,6 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
 
-    @Override
-    public Flux<User> getAllUsers() {
-        return ReactiveLogger.logFlux(super.findAll(), "R2DBC getAllUsers");
-    }
 
 
     @Override
@@ -62,11 +75,6 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                 .switchIfEmpty(Mono.empty());
     }
 
-
-    @Override
-    public Mono<Void> deleteUser(Long idNumber) {
-        return repository.deleteById(idNumber);
-    }
 
     @Override
     public Flux<UserSimpleView> getUsersByEmails(List<String> emails) {

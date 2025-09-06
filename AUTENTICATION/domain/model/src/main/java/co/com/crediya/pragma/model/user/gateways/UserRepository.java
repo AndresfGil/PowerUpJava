@@ -10,11 +10,7 @@ public interface UserRepository {
 
     Mono<User> saveUser(User user);
 
-    Flux<User> getAllUsers();
-
     Mono<User> getUserByEmail(String email);
-
-    Mono<Void> deleteUser(Long idNumber);
 
     Flux<UserSimpleView>getUsersByEmails(List<String> emails);
 

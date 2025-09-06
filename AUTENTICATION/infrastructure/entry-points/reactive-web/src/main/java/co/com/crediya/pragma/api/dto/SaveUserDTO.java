@@ -37,6 +37,7 @@ public class SaveUserDTO {
     @DecimalMax(value = "15000000", message = "El salario no puede exceder 15,000,000")
     private BigDecimal baseSalary;
 
+    @NotBlank(message = "El documento es obligatorio")
     @Size(max = 12, message = "El documento no puede exceder 30 caracteres")
     private String documentId;
 
