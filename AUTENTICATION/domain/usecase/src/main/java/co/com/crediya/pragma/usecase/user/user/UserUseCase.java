@@ -2,74 +2,42 @@ package co.com.crediya.pragma.usecase.user.user;
 
 import co.com.crediya.pragma.model.user.User;
 import co.com.crediya.pragma.model.user.exception.EmailAlreadyExistsException;
-import co.com.crediya.pragma.model.user.exception.PasswordHashingException;
-import co.com.crediya.pragma.model.user.exception.UnauthorizedException;
+import co.com.crediya.pragma.model.user.gateways.RoleRepository;
 import co.com.crediya.pragma.model.user.gateways.UserRepository;
+import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import co.com.crediya.pragma.model.user.exception.RolNotFoundException;
+import java.util.List;
 
 
 @RequiredArgsConstructor
 public class UserUseCase {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     public Mono<User> saveUser(User user) {
-        String normalized = user.getEmail() == null ? null : user.getEmail().trim().toLowerCase();
-
-        User userWithHashedPassword = user.toBuilder()
-                .email(normalized)
-                .password(hashPassword(user.getPassword()))
-                .build();
-
-        return userRepository.getUserByEmail(normalized)
-                .flatMap(existing -> Mono.<User>error(new EmailAlreadyExistsException(normalized)))
-                .switchIfEmpty(userRepository.saveUser(userWithHashedPassword));
+        return userRepository.getUserByEmail(user.getEmail()).hasElement()
+                .flatMap(exist ->
+                        exist
+                                ? Mono.error(new EmailAlreadyExistsException(user.getEmail()))
+                                : roleRepository.findById(user.getRolId()) )
+                .switchIfEmpty(Mono.error(new RolNotFoundException()
+                ))
+                .then(Mono.defer(() -> userRepository.saveUser(user)));
     }
 
-    public Mono<User> saveUserWithAuthorization(User user, Long currentUserRoleId) {
-        return validateUserCreationPermissions(currentUserRoleId)
-                .then(saveUser(user));
+
+    public Mono<User> getUserByEmail(String email){
+        return userRepository.getUserByEmail(email);
     }
 
-    private Mono<Void> validateUserCreationPermissions(Long currentUserRoleId) {
-        if (currentUserRoleId == null || (currentUserRoleId != 1L && currentUserRoleId != 2L)) {
-            return Mono.error(UnauthorizedException.insufficientPermissions("registrar usuarios"));
-        }
-        return Mono.empty();
+    public Flux<UserSimpleView> getUsersByEmails(List<String> correosElectronicos) {
+        return userRepository.getUsersByEmails(correosElectronicos);
     }
 
-    public Flux<User> getAllUsers(){
-        return userRepository.getAllUsers();
-    }
 
-    public Mono<User> getUserByIdNumber(Long idNumber){
-        return userRepository.getUserByIdNumber(idNumber);
-    }
-
-    public Mono<Void> deleteUser(Long idNumber){
-        return userRepository.deleteUser(idNumber);
-    }
-
-    private String hashPassword(String password) {
-        if (password == null || password.trim().isEmpty()) {
-            throw new PasswordHashingException("La contraseña no puede ser nula o vacía", null);
-        }
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashedBytes = md.digest(password.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashedBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new PasswordHashingException("Error al hashear la contraseña", e);
-        }
-    }
 }

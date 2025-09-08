@@ -14,12 +14,4 @@ public class UnauthorizedException extends BaseException {
         );
     }
 
-    public static UnauthorizedException insufficientPermissions(String action) {
-        return new UnauthorizedException("Permisos insuficientes para realizar la acción: " + action);
-    }
-
-    public static UnauthorizedException invalidToken() {
-        return new UnauthorizedException("Token de autenticación inválido o expirado");
-    }
-
 }

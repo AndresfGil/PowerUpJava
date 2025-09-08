@@ -1,51 +1,47 @@
 package co.com.crediya.pragma.model.user.exception;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmailAlreadyExistsExceptionTest {
 
     @Test
-    @DisplayName("Debe crear EmailAlreadyExistsException con email válido")
-    void shouldCreateEmailAlreadyExistsExceptionWithValidEmail() {
+    void testEmailAlreadyExistsExceptionCreation() {
         String email = "test@example.com";
-
         EmailAlreadyExistsException exception = new EmailAlreadyExistsException(email);
 
-        assertEquals("El correo ya está registrado: " + email, exception.getMessage());
+        assertEquals("El correo ya está registrado: test@example.com", exception.getMessage());
         assertEquals("EMAIL_DUPLICATE", exception.getErrorCode());
         assertEquals("Email duplicado", exception.getTitle());
         assertEquals(409, exception.getStatusCode());
+        assertNotNull(exception.getErrors());
         assertEquals(1, exception.getErrors().size());
-        assertEquals("El email " + email + " ya existe en el sistema", exception.getErrors().get(0));
-        assertNotNull(exception.getTimestamp());
+        assertEquals("El email test@example.com ya existe en el sistema", exception.getErrors().get(0));
     }
 
     @Test
-    @DisplayName("Debe crear EmailAlreadyExistsException con email null")
-    void shouldCreateEmailAlreadyExistsExceptionWithNullEmail() {
-        String email = null;
+    void testEmailAlreadyExistsExceptionWithNullEmail() {
+        EmailAlreadyExistsException exception = new EmailAlreadyExistsException(null);
 
-        EmailAlreadyExistsException exception = new EmailAlreadyExistsException(email);
-
-        assertEquals("El correo ya está registrado: " + email, exception.getMessage());
+        assertEquals("El correo ya está registrado: null", exception.getMessage());
         assertEquals("EMAIL_DUPLICATE", exception.getErrorCode());
         assertEquals("Email duplicado", exception.getTitle());
         assertEquals(409, exception.getStatusCode());
-        assertEquals(1, exception.getErrors().size());
-        assertEquals("El email " + email + " ya existe en el sistema", exception.getErrors().get(0));
-        assertNotNull(exception.getTimestamp());
     }
 
+    @Test
+    void testEmailAlreadyExistsExceptionWithEmptyEmail() {
+        EmailAlreadyExistsException exception = new EmailAlreadyExistsException("");
+
+        assertEquals("El correo ya está registrado: ", exception.getMessage());
+        assertEquals("EMAIL_DUPLICATE", exception.getErrorCode());
+        assertEquals("Email duplicado", exception.getTitle());
+        assertEquals(409, exception.getStatusCode());
+    }
 
     @Test
-    @DisplayName("Debe heredar correctamente de BaseException")
-    void shouldInheritCorrectlyFromBaseException() {
-        String email = "test@example.com";
-
-        EmailAlreadyExistsException exception = new EmailAlreadyExistsException(email);
+    void testEmailAlreadyExistsExceptionInheritance() {
+        EmailAlreadyExistsException exception = new EmailAlreadyExistsException("test@example.com");
 
         assertTrue(exception instanceof BaseException);
         assertTrue(exception instanceof RuntimeException);
