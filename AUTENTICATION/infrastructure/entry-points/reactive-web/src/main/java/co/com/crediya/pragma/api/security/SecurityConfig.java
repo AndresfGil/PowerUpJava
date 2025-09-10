@@ -30,7 +30,6 @@ public class SecurityConfig {
 
     @Bean
     SecurityWebFilterChain filterChain(ServerHttpSecurity http, JwtConverter jwtConverter) {
-        // manager tonto: el converter ya crea el Authentication válido
         ReactiveAuthenticationManager manager = authentication -> Mono.just(authentication);
 
         AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(manager);
@@ -52,7 +51,7 @@ public class SecurityConfig {
                             // Reglas específicas:
                             .pathMatchers(HttpMethod.POST, "/api/v1/users/batch").hasAnyAuthority("ADMIN", "ASESOR")
                             .pathMatchers(HttpMethod.POST, "/api/v1/users").hasAnyAuthority("ADMIN", "ASESOR")
-                            .pathMatchers(HttpMethod.GET, "/api/v1/validate-user").hasAuthority("CLIENTE")
+                            .pathMatchers(HttpMethod.POST, "/api/v1/validate-user").hasAuthority("CLIENTE")
                             .anyExchange().authenticated();
                 })
                 .addFilterAt(jwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)

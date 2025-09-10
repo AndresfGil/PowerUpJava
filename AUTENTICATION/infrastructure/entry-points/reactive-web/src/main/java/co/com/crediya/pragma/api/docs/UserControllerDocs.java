@@ -2,7 +2,6 @@ package co.com.crediya.pragma.api.docs;
 
 import co.com.crediya.pragma.api.Handler;
 import co.com.crediya.pragma.api.dto.*;
-import co.com.crediya.pragma.model.user.solicitudes.UserSimpleView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.media.Content;

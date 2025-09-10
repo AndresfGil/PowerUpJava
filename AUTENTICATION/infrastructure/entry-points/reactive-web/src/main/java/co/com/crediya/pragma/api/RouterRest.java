@@ -14,7 +14,7 @@ public class RouterRest implements UserControllerDocs {
     @Bean
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
         return route(POST("/api/v1/users"), handler::listenSaveUser)
-                .andRoute(GET("/api/v1/validate-user"), handler::listenValidateUser)
+                .andRoute(POST("/api/v1/validate-user"), handler::listenValidateUser)
                 .andRoute(POST("/api/v1/users/batch"), handler::listenGetUsersByEmails);
 
     }

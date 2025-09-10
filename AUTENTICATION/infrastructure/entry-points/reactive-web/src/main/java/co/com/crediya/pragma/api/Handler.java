@@ -2,7 +2,6 @@ package co.com.crediya.pragma.api;
 
 import co.com.crediya.pragma.api.dto.*;
 import co.com.crediya.pragma.api.mapper.UserMapper;
-import co.com.crediya.pragma.usecase.login.LoginUseCase;
 import co.com.crediya.pragma.usecase.user.user.UserUseCase;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -25,7 +24,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class Handler {
     private final UserUseCase userUseCase;
-    private final LoginUseCase loginUseCase;
     private final Validator validator;
     private final UserMapper userMapper;
 

@@ -9,8 +9,6 @@ spring:
     console:
       enabled: true
       path: "/h2"
-  profiles:
-    include: null
 
   flyway:
     enabled: true
@@ -22,6 +20,7 @@ spring:
     connect-retries: 3
     placeholders:
       db: "${adapters.r2dbc.database}"
+
 
 springdoc:
   api-docs:
@@ -43,7 +42,6 @@ r2dbc:
     max-size: 20
     max-idle-time: 30m
 
-
 adapters:
   r2dbc:
     host: "localhost"
@@ -62,7 +60,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "*"
 
 # JWT Configuration
 security:
