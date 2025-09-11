@@ -1,4 +1,6 @@
 package co.com.crediya.pragma.api.dto;
 
-public record UserValidateDTO(boolean exists) {
+import java.math.BigDecimal;
+
+public record UserValidateDTO(boolean exists, BigDecimal baseSalary) {
 }
