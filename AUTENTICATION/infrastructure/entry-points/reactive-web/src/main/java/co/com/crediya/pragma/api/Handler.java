@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,12 +83,12 @@ public class Handler {
 
                                 return ServerResponse.ok()
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .bodyValue(new UserValidateDTO(userValid));
+                                        .bodyValue(new UserValidateDTO(userValid, userValid ? user.getBaseSalary() : null));
                             })
                             .switchIfEmpty(
                                     ServerResponse.ok()
                                             .contentType(MediaType.APPLICATION_JSON)
-                                            .bodyValue(new UserValidateDTO(false))
+                                            .bodyValue(new UserValidateDTO(false, null))
                             );
                 })
                 .doOnError(ex -> log.error("EXISTS USER Failure looking user: {}", ex.toString()));
