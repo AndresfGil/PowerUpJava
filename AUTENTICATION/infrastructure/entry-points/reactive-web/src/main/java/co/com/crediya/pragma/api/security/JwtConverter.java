@@ -4,6 +4,7 @@ import co.com.crediya.pragma.model.user.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,9 +14,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,11 +25,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JwtConverter implements ServerAuthenticationConverter {
 
+    @Value("${app.publicPaths}")
+    private List<String> publicPaths;
 
     private final JwtService jwt;
 
     public JwtConverter(JwtService jwt) {
         this.jwt = jwt;
+    }
+    
+    @Value("${app.publicPaths}")
+    public void setPublicPaths(List<String> publicPaths) {
+        this.publicPaths = publicPaths;
+        log.info("JwtConverter loaded with public paths: {}", publicPaths);
     }
 
 
@@ -38,6 +47,7 @@ public class JwtConverter implements ServerAuthenticationConverter {
         
         // Si es una ruta pública, no procesar autenticación
         if (isPublicPath(path)) {
+            log.debug("Public path accessed: {} - skipping authentication", path);
             return Mono.empty();
         }
         
@@ -61,11 +71,31 @@ public class JwtConverter implements ServerAuthenticationConverter {
     }
     
     private boolean isPublicPath(String path) {
-        return path.equals("/api/v1/login") || 
-               path.startsWith("/h2/") ||
-               path.startsWith("/v3/api-docs") ||
-               path.startsWith("/swagger-ui") ||
-               path.startsWith("/webjars/");
+        if (publicPaths == null || publicPaths.isEmpty()) {
+            // Fallback a rutas hardcodeadas si no se puede cargar la configuración
+            return path.equals("/api/v1/login") || 
+                   path.equals("/api/v1/health") ||
+                   path.equals("/api/v1/ping") ||
+                   path.equals("/api/v1/test") ||
+                   path.startsWith("/h2/") ||
+                   path.startsWith("/v3/api-docs") ||
+                   path.startsWith("/swagger-ui") ||
+                   path.startsWith("/webjars/") ||
+                   path.startsWith("/actuator/");
+        }
+        
+        // Usar la configuración de application.yaml
+        return publicPaths.stream().anyMatch(pattern -> {
+            if (pattern.endsWith("/**")) {
+                String prefix = pattern.substring(0, pattern.length() - 3);
+                return path.startsWith(prefix);
+            } else if (pattern.endsWith("**")) {
+                String prefix = pattern.substring(0, pattern.length() - 2);
+                return path.startsWith(prefix);
+            } else {
+                return path.equals(pattern);
+            }
+        });
     }
 
 

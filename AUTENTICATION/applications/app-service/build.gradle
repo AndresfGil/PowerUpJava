@@ -8,6 +8,8 @@ dependencies {
     implementation project(':usecase')
     implementation project(':jwt')
     implementation 'org.springframework.boot:spring-boot-starter'
+    // Spring Boot Actuator para endpoints de monitoreo
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     // Flyway for DB migrations (JDBC-based, independent of R2DBC runtime)
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'

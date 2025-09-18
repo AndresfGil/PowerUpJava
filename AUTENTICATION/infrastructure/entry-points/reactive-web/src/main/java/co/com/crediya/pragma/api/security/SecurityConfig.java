@@ -2,6 +2,7 @@ package co.com.crediya.pragma.api.security;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @EnableWebFluxSecurity
@@ -30,6 +32,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityWebFilterChain filterChain(ServerHttpSecurity http, JwtConverter jwtConverter) {
+        log.info("Configuring security with public paths: {}", publicPaths);
+        
         ReactiveAuthenticationManager manager = authentication -> Mono.just(authentication);
 
         AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(manager);

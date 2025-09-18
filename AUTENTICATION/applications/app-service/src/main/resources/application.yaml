@@ -2,25 +2,24 @@ server:
   port: 8080
 spring:
   application:
-    name: "autentication"
+    name: 'autentication'
   devtools:
     add-properties: false
   h2:
     console:
       enabled: true
-      path: "/h2"
+      path: '/h2'
 
   flyway:
     enabled: true
     # Flyway usará su propio DataSource JDBC si se provee esta URL
-    url: "jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_AUTENTICATION:autentication}"
-    user: "${MYSQL_USER:root}"
-    password: "${MYSQL_PASSWORD:andres98}"
-    locations: "classpath:db/migration"
+    url: 'jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_AUTENTICATION:autentication}'
+    user: '${MYSQL_USER:root}'
+    password: '${MYSQL_PASSWORD:root}'
+    locations: 'classpath:db/migration'
     connect-retries: 3
     placeholders:
-      db: "${adapters.r2dbc.database}"
-
+      db: '${adapters.r2dbc.database}'
 
 springdoc:
   api-docs:
@@ -34,9 +33,9 @@ springdoc:
     try-it-out-enabled: true
 
 r2dbc:
-  url: "r2dbc:mysql://${adapters.r2dbc.host}:${adapters.r2dbc.port}/${adapters.r2dbc.database}"
-  username: "${adapters.r2dbc.username}"
-  password: "${adapters.r2dbc.password}"
+  url: 'r2dbc:mysql://${adapters.r2dbc.host}:${adapters.r2dbc.port}/${adapters.r2dbc.database}'
+  username: '${adapters.r2dbc.username}'
+  password: '${adapters.r2dbc.password}'
   pool:
     initial-size: 5
     max-size: 20
@@ -44,23 +43,31 @@ r2dbc:
 
 adapters:
   r2dbc:
-    host: "${MYSQL_HOST:localhost}"
-    port: "${MYSQL_PORT:3306}"
-    database: "${MYSQL_DATABASE_AUTENTICATION:autentication}"
-    username: "${MYSQL_USER:root}"
-    password: "${MYSQL_PASSWORD:andres98}"
+    host: '${MYSQL_HOST:localhost}'
+    port: '${MYSQL_PORT:3306}'
+    database: '${MYSQL_DATABASE_AUTENTICATION:autentication}'
+    username: '${MYSQL_USER:root}'
+    password: '${MYSQL_PASSWORD:root}'
 
 management:
   endpoints:
     web:
       exposure:
-        include: "health,prometheus"
+        include: 'health,info,prometheus'
+      base-path: '/actuator'
   endpoint:
     health:
+      show-details: always
+      show-components: always
       probes:
         enabled: true
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
 cors:
-  allowed-origins: "*"
+  allowed-origins: '*'
 
 # JWT Configuration
 security:
@@ -71,10 +78,6 @@ security:
 
 # App Configuration
 app:
-  issuer: "${JWT_ISSUER:PowerUp}"
-  audience: "PowerUp-API"
-  publicPaths: /h2/**,/api/v1/login,/v3/api-docs/**,/v3/api-docs/swagger-config,/swagger-ui.html,/swagger-ui/**,/webjars/**
-
-
-
-
+  issuer: '${JWT_ISSUER:PowerUp}'
+  audience: 'PowerUp-API'
+  publicPaths: /h2/**,/api/v1/login,/api/v1/health,/api/v1/ping,/api/v1/test,/actuator/**,/v3/api-docs/**,/v3/api-docs/swagger-config,/swagger-ui.html,/swagger-ui/**,/webjars/**
