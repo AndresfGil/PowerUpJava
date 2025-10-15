@@ -4,11 +4,13 @@ import co.com.crediya.pragma.model.user.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +29,10 @@ public class JwtConverter implements ServerAuthenticationConverter {
 
 
     private final JwtService jwt;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    @Value("${app.publicPaths}")
+    private List<String> publicPaths;
 
     public JwtConverter(JwtService jwt) {
         this.jwt = jwt;
@@ -61,11 +68,10 @@ public class JwtConverter implements ServerAuthenticationConverter {
     }
     
     private boolean isPublicPath(String path) {
-        return path.equals("/api/v1/login") || 
-               path.startsWith("/h2/") ||
-               path.startsWith("/v3/api-docs") ||
-               path.startsWith("/swagger-ui") ||
-               path.startsWith("/webjars/");
+        if (publicPaths == null || publicPaths.isEmpty()) {
+            return false;
+        }
+        return publicPaths.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
 

@@ -55,10 +55,12 @@ management:
     web:
       exposure:
         include: "health,prometheus"
+      base-path: /autenticacion/actuator
   endpoint:
     health:
       probes:
         enabled: true
+
 cors:
   allowed-origins: "*"
 
@@ -71,9 +73,15 @@ security:
 
 # App Configuration
 app:
-  issuer: "${JWT_ISSUER:PowerUp}"
-  audience: "PowerUp-API"
-  publicPaths: /h2/**,/api/v1/login,/v3/api-docs/**,/v3/api-docs/swagger-config,/swagger-ui.html,/swagger-ui/**,/webjars/**
+  issuer: "${JWT_ISSUER:https://cognito-idp.us-east-2.amazonaws.com/us-east-2_xA41Rttax}"
+  audience: "${JWT_AUDIENCE:6sci29nrk6p6bck0bol4sldqo8}"
+  # Configuración de Cognito (para validación)
+  cognito:
+    user-pool-id: "${COGNITO_USER_POOL_ID:}"
+    client-id: "${COGNITO_CLIENT_ID:}"
+    region: "${AWS_REGION:us-east-2}"
+  publicPaths: /h2/**,/api/v1/login,/v3/api-docs/**,/v3/api-docs/swagger-config,/swagger-ui.html,/swagger-ui/**,/webjars/**,/actuator/health,/autenticacion/actuator/health,/actuator/health/liveness,/actuator/health/readiness
+
 
 
 

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  autentication-local:
+    build: 
+      context: .
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Cognito Configuration
+      - COGNITO_USER_POOL_ID=us-east-2_xA41Rttax
+      - COGNITO_CLIENT_ID=6sci29nrk6p6bck0bol4sldqo8
+      - AWS_REGION=us-east-2
+      
+      # JWT Configuration (usando Cognito como issuer)
+      - JWT_ISSUER=https://cognito-idp.us-east-2.amazonaws.com/us-east-2_xA41Rttax
+      - JWT_AUDIENCE=6sci29nrk6p6bck0bol4sldqo8
+      - JWT_KEY_SECRET=fQZJCefphgnEAnD9WlLBIQbpzV351d0mb3oGGsT6bvtaSqIZbTSId6wDwV3B1CbxEO7JlxQK6obNR9oUjDlYGg==
+      
+      # Database Configuration (conectar a MySQL local o en otro contenedor)
+      - MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE_AUTENTICATION=autentication
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=andres98
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
